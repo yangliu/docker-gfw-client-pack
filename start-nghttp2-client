@@ -1,0 +1,38 @@
+#!/bin/bash
+
+if [ $# -eq 0 ]; then
+  echo "Usage: $0 <config-file>"
+  echo ""
+  echo "The <config-file> should be placed under $PWD/settings/nghttpx/<config-file>."
+  echo "See $PWD/settings/nghttpx/client-sample."
+  exit
+fi
+
+if [ ! -f $PWD/settings/nghttpx/$1 ]; then
+  echo "Cannot find the config file."
+  exit
+fi
+
+source $PWD/settings/nghttpx/$1
+
+
+if [[ $(docker ps -a | grep nghttpx-client) ]]; then
+  docker rm nghttpx-client
+fi
+
+# remove client key password
+echo "Since nghttpx cannot use encrypted private key without entering the password interactively, we have to genenrate a decrypted private key before starting docker."
+echo "This file will be removed automatically as soon as nghttpx started, but stored inside the docker container."
+echo "Please make sure destroy the container \"nghttpx-client\" after using to avoid leaking of the private key!"
+openssl rsa -in $PWD/settings/nghttpx/key/$H2_KEY -out $PWD/settings/nghttpx/key/$H2_KEY.nopass
+
+
+docker run -d --name=nghttpx-client \
+           -v $PWD/settings/nghttpx/key:/key \
+           -e H2_CERT=$H2_CERT \
+           -e H2_KEY=$H2_KEY.nopass \
+           -e H2_BACKEND=$H2_BACKEND \
+           -e H2_WORKERS=$H2_WORKERS \
+           -e H2_PARAMS=$H2_PARAMS \
+           -p 8080:8080 \
+           yangliu/nghttpx

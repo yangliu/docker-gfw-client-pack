@@ -1,0 +1,5 @@
+H2_CERT=client.cer
+H2_KEY=client.key
+H2_BACKEND="ssl.proxyserver.com,443;;proto=h2;tls"
+H2_WORKERS=4
+H2_PARAMS=

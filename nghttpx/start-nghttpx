@@ -1,0 +1,20 @@
+#!/bin/bash
+
+# create configure file based on envs
+
+[ -f /root/nghttpx.conf ] && rm /root/nghttpx.conf
+cat >/root/nghttpx.conf <<EOL
+http2-proxy=yes
+frontend=0.0.0.0,8080;no-tls
+backend=$H2_BACKEND
+client-cert-file=/key/$H2_CERT
+client-private-key-file=/key/$H2_KEY
+private-key-passwd-file=/key/$H2_KEYPASS
+workers=$H2_WORKERS
+add-x-forwarded-for=no
+no-via=yes
+no-ocsp=yes
+npn-list=h2
+EOL
+
+/usr/sbin/nghttpx --conf=/root/nghttpx.conf $H2_PARAMS

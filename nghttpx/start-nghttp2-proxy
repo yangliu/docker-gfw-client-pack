@@ -1,0 +1,4 @@
+#!/bin/bash
+
+CLIENT_KEY=yangliu
+BACKEND=ssl-ca.yliulab.com,443;;proto=h2;tls
